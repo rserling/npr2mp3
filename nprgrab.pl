@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use Net::SMTP;
 use File::Copy;
-use MIME::Lite;
+#use MIME::Lite;
 
 $usage = "Usage: $0 <fa|we|me|atc|ww> [#]\n where # is number of days ago\n";
 
@@ -19,10 +19,11 @@ $prog = $prg;
 #if($prg eq "me"){
 #	$prog = "morning";
 #}
-$npath = "/home/elyons/radio";
+#$npath = "/home/elyons/radio";
+$npath = "/home/ec2-user/Music/radio";
 $tpath = "/var/tmp";
 $plist = "/var/www/html/" . $prg . ".m3u";
-%tits = ('fa'=>'Fresh Aire', 'wesat'=>'Weakened Edition Saturday', 'wesun'=>'Weakened Edition Sunday', 'me'=>'Morning Edition', 'atc'=>'All Things Considered', 'ww'=>'Wait Wait Dont Tell Me');
+%tits = ('fa'=>'Fresh Aire', 'wesat'=>'Weakened Edition Saturday', 'wesun'=>'Weakened Edition Sunday', 'me'=>'Morning Edition', 'atc'=>'All Things Considered', 'ww'=>'Wait Wait Dont Tell Me', 'we'=>'Weakened Edition');
 chomp($year = `/bin/date +\%Y`);
 chomp($d = `/bin/date +\%m\%d`);
 chomp($w = `/bin/date +\%w`);
@@ -98,22 +99,24 @@ if($prg eq "we"){
 	}
 }
 chdir($tpath);
-$get = "/usr/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg;
-if($ARGV[1]){
+#$get = "/usr/local/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg;
+#$get = "/usr/local/bin/wget -q -T 30 -O " . $prg . "\.m3u http://localhost/" . $prg;
+#$get = "/usr/local/bin/wget -q -T 30 -i /var/www/html/" . $prg;
+#if($ARGV[1]){
 #	chomp($plist = $ARGV[2]);
-#	$get = "/usr/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg . "-" . $d . "\.m3u"; 
-	$get .= "-" . $d; 
-	if($ENV{TERM}){
-		print "$get\n";
-	}
-}
-$get .= "\.m3u";
-if(system($get)!=0){
-	&logg("wget failed for playlist $prog");
-	if($ENV{TERM}){print "URL: $get\n";}
-	exit(1);
-}
-my $got = $prog . "\.m3u";
+#	$get = "/usr/local/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg . "-" . $d . "\.m3u"; 
+#	$get .= "-" . $d; 
+#	if($ENV{TERM}){
+#		print "$get\n";
+#	}
+#}
+#$get .= "\.m3u";
+#if(system($get)!=0){
+#	&logg("wget failed for playlist $prog");
+#	if($ENV{TERM}){print "URL: $get\n";}
+#	exit(1);
+#}
+my $got = "/var/www/html/".$prog . "\.m3u";
 if(! -e "$got"){
 	&logg("playlist $got not found after wget");
 	exit(1);
@@ -123,6 +126,7 @@ foreach $url (`cat $got`){
 #	my $song = "Unknown Title";
 	chomp($url);
 	if($url =~ /^\# (.+)$/){
+		next if($1 eq $song);
 		$song = $1;
 		$song =~ s/\'//g;
 		$song =~ s/ Or / or /g;
@@ -148,25 +152,26 @@ foreach $url (`cat $got`){
 			if($ENV{TERM}){
 				print "Grabbing " . $prg . $d . " track $t...\n";
 			}
-#			if(system("/usr/bin/wget -q $url")!=0){
-			if(system("/usr/bin/wget -qO $fname $url")!=0){
+#			if(system("/usr/local/bin/wget -q $url")!=0){
+			if(system("/usr/local/bin/wget -qO $fname $url")!=0){
 				&logg("wget failed for $url: $!");
 				next;
 			}
 			unless(-e "$tpath/$fname"){
-				if(system("/bin/mv $tpath/$fname* $tpath/$fname")!=0){
+				if(system("mv $tpath/$fname* $tpath/$fname")!=0){
 					&logg("move failed for $fname: $!");
 					next;
 				}
 			}
-			$recode = "/usr/bin/lame -a -m m -b 24 --resample 16 --scale 2 --quiet --add-id3v2 --ta NPR";
+			$recode = "/usr/local/bin/lame -a -m m -b 24 --resample 16 --scale 2 --quiet --add-id3v2 --ta NPR";
 			$recode .= " --tl \"".$d." ".$tits{$prg}. "\"";
 			if($song =~ /.+/){
 				$recode .= " --tt \"".$song."\"";
 			}
-			else{
-				$recode .= " --tt \"".$tits{$prg}." ".$t."\"";
-			}
+			## Skip if no story title
+			#else{
+			#	$recode .= " --tt \"".$tits{$prg}." ".$t."\"";
+			#}
 			$recode .= " --ty \"$year\"";
 			$recode .= " --tn \"$t\"";
 			$recode .= " --tg \"Speech\"";
@@ -209,42 +214,38 @@ else{
 	chdir($npath);
 }
 $prg =~ s/^wes[atun]+/we/;
-@brony = `rsync -auv $npath/$prg$d* 192.168.0.43:Music/mp3/ 2>\&1`;
-if($?!=0){
-	&logg("rsync to brony at wired address failed");
-	$repor .= "rsync to brony at wired address failed\n";
-	@brony = `rsync -auv $npath/$prg$d* 192.168.0.9:Music/mp3/ 2>\&1`;
-	if($?!=0){
-		&logg("rsync to brony at wifi address failed, aborting");
-		$repor .= "rsync to brony at wifi address failed, aborting\n";
-	}
-}
-if(grep(/mp3/, @brony)){
-	@sent = grep(/\.mp3$/, @brony);
-	$dunn = scalar(@sent);
-	&logg("Copied $dunn files to brony for $prg");
-	$repor .= "Copied $dunn files to brony for $prg\n";
-	open(SENT, ">/var/tmp/went2brony");
-	foreach $b (@brony){
-		next if($b !~ /mp3/);
-		chomp($b);
-		$b =~ s/^([^\s]+)\s+.*$/$1/;
-		print SENT "$b\n";
-	}
-	close(SENT);
-}
-else{
-	&logg("No files were copied to brony for $prg");
-	$repor .= "No files were copied to brony for $prg\n";
-}
-&domail($repor);
-print "seem to have reached the end.\n" if($ENV{TERM});
+#@play = `rsync -auv $npath/$prg$d* /home/elyons/Music/mp3/ 2>\&1`;
+#if($?!=0){
+#	&logg("copy to local upload path failed\n");
+#	$repor .= "copy to local upload path failed, aborting\n";
+#}
+#if(grep(/mp3/, @play)){
+#	@sent = grep(/\.mp3$/, @play);
+#	$dunn = scalar(@sent);
+#	&logg("Copied $dunn files to upload path for $prg");
+#	$repor .= "Copied $dunn files to upload path for $prg\n";
+#	open(SENT, ">/var/tmp/went2brony");
+#	foreach $b (@play){
+#		next if($b !~ /mp3/);
+#		chomp($b);
+#		$b =~ s/^([^\s]+)\s+.*$/$1/;
+#		print SENT "$b\n";
+#	}
+#	close(SENT);
+#}
+#else{
+#	&logg("No files were copied to upload path for $prg");
+#	$repor .= "No files were copied to upload path for $prg\n";
+#}
+#&domail($repor) or warn("domail subroutine failed.");
+#print "seem to have reached the end.\n" if($ENV{TERM});
+&logg("seem to have reached the end");
 exit();
 sub logg( "$" ){
 	chomp($tim = `date +\"\%b \%d \%T\"`);
 #	$tim = localtime(time);
 	$out = "@_";
-	$lfile = "/home/elyons/log/nprgrab";
+	$lfile = "/home/ec2-user/log/nprgrab";
 	open(LOG, ">>$lfile") or die "Can't open logfile $lfile: $!\n";
 	select LOG unless($ENV{TERM});
 	print "[$tim] (nprgrab) $out\n";
@@ -253,7 +254,7 @@ sub logg( "$" ){
 sub domail( "$" ){
 	$tim = localtime(time);
 	chomp($host = `hostname`);
-	$subject = "Files available for $prog";
+	$subject = "Files available for $tits{$prg}";
 	$bod= "@_";
 	&logg($bod);
 	$bod .= "\nMessage generated $tim by $host:$0\n";
