@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 
-use MIME::Lite;
 use File::Copy;
 #use Cal::Date qw(today ISO_day MJD);
 @months = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
@@ -29,9 +28,10 @@ if(@ARGV == 1){
 	if(-e "$mark"){
 		&logg("Flag file $mark exists, exiting");
 		exit();
-	}	
+	}
 	$arch="http://www.npr.org/programs/$pgid/archive";
 ## need error checking on this wget...
+	#	print "Command: `wget -qO - $arch |grep 'showDate=$urldate' |head -1`\n";
 	chomp($preurl = `wget -qO - $arch |grep 'showDate=$urldate' |head -1`);
 	if($? != 0){
 		&domail("Error: request failed for $urldate archive page for $pgid.");
@@ -84,6 +84,7 @@ elsif(@ARGV == 2) {
 		exit(1);
 	}
 	#$url = "http://www.npr.org/templates/rundowns/rundown.php?prgId=$pgid\&prgDate=$urldate\&view=storyview";
+#https:\/\/www.npr.org\/2024\/07\/13\/nx-s1-5035443\/the-newest-lifeguards-at-a-maine-beach-are-drawing-attention
 	$flag = "/var/tmp/" . $prog . $month . $day;
 ### if grabbing archive, don't overwrite today's playlist, make new
 	open(M3U, ">/var/www/html/$prog-$fdstr.m3u") or die "Can't open file:$!\n";
@@ -115,10 +116,14 @@ foreach $line (<OUTPUT>){
 	chomp;
 #	if($line =~ /id=\"title([0-9]+)\" value=\"([^\"]+)\"/){
 	if($line =~ /' >([^<]+)<\/a><\/h3>/){
-		$tit = "unknown title";
+		$t = $1;
+		chomp($t);
+		next if($t eq $tit);
+#		$tit = "unknown title";
 #		chomp($sid = $1);
 #		chomp($tit = $2);
-		chomp($tit = $1);
+		$tit = $t;
+		next if($tit =~ /Morning News Brief/i);
 		next if($tit =~ /.+$day, $year$/);
 #		$tit = $2 if($2 =~ /\w/);
 		$tit =~ s/[\(\*\)]//g;
@@ -151,12 +156,18 @@ foreach $line (<OUTPUT>){
 #	 <li><a class="audio-tool audio-tool-download" href="http://pd.npr.org/anon.npr-mp3/npr/atc/2016/03/20160329_atc_remembering_patty_duke_hollywoods_miracle_worker.mp3?orgId=1&amp;topicId=1062&amp;d=251&amp;p=2&amp;story=472309592&amp;t=progseg&amp;e=472228928&amp;seg=19&amp;siteplayer=true&amp;dl=1" 
 #<a href="http://www.npr.org/2016/04/12/473992245/criminal-justice-dominates-crowded-baltimore-mayoral-race"  data-metrics='{"action":"Click Rundown Story 1","category":"Rundown Click","label":"http:\/\/www.npr.org\/2016\/04\/12\/473992245\/criminal-justice-dominates-crowded-baltimore-mayoral-race"}' >Criminal Justice Dominates Crowded Baltimore Mayoral Race</a></h1>
 # http://pd.npr.org/anon.npr-mp3/npr/atc/2016/04/20160412_atc_criminal_justice_dominates_crowded_baltimore_mayoral_race.mp3?orgId=1&topicId=1014&d=235&p=2&story=473992245&t=progseg&e=473914722&seg=1&siteplayer=true&dl=1
+# <h3 class="rundown-segment__title"><a href="https://www.npr.org/2021/06/13/1006085956/how-to-be-a-citizen-being-involved-in-civic-life-at-a-young-age"  data-metrics='{"action":"Click Rundown Story 7","category":"Rundown Click","label":"https:\/\/www.npr.org\/2021\/06\/13\/1006085956\/how-to-be-a-citizen-being-involved-in-civic-life-at-a-young-age"}' >How To Be A Citizen: Being Involved In Civic Life At A Young Age</a></h3>
 
+#https://ondemand.npr.org/anon.npr-mp3/npr/specials/2021/06/20210613_specials_20210613_atc_story1.mp3
+#
 #audio-tool-download"><a href
 #
-	elsif($line =~ /download\"><a href=\"([^\"]+\.mp3).+/){
+#	elsif($line =~ /download\"><a href=\"([^\"]+\.mp3).+/){
+	elsif($line =~ /listen\" href=\"(https:\/\/ondemand[^\"]+\.mp3).+/){
 		$mp3url = $1;
+		next if($mp3url =~ /news_brief/);
 		next if($mp3url !~ /$dstr/);
+		next if($mp3url =~ /[0-9]+m[0-9]+\.mp3/);
 #		$mp3url =~ s/\?dl=1$//;
 		push(@plist, $mp3url);
 		print "Extracted URL: \'$mp3url\'\n" if($ENV{TERM});
@@ -276,47 +287,14 @@ if($ENV{TERM}){
 	print "Finished reporting, $cnt links in $prog.m3u.\n";
 	exit();
 }
-#&domail();
-
-sub domail(){
-	$tim = localtime(time);
-	if(@_){
-		$subject = "Error: too few links for $prog";
-		$msg = "@_";
-#		$subject = "Error: no match for $prog";
-#		$msg = "The regex match is failing for $prog\n";
-		&logg($msg);
-	}
-	else{
-		$subject = "Playlist prepared for $prog";
-#		$msg = "\nhttp://www.pyoing.net/$prog.m3u\n";
-		$msg .= "Tracks: $tx\n\n";
-	}
-	$msg .= "Message generated $tim by $0\n";
-	$msg = MIME::Lite->new(
-		SetSender=>'rserling@comcast.net',
-		Return-Path =>'rserling@comcast.net',
-		From    =>'rserling@comcast.net',
-#		To      =>'elyons@pyoing.net',
-		To      =>'bitshag@gmail.com',
-		#Cc      =>'bergie@bergie.net',
-		Subject =>"$subject",
-		Type    =>'text/plain',
-		Data =>"$msg"
-	);
-	$msg->send;
-#	if($msg->send){
-#		exit();
-#		print "send from $sender successful.\n";
-#	}
-#	else {
-#		exit(1);
-#		print "send failed.\n";
-#	}
+else{
+	&logg("Finished reporting, $cnt links in $prog.m3u.\n");
+	exit();
 }
+
 sub logg($){
 	$msg = "@_";
-	open(LOG, ">>/var/log/nprgrab");
+	open(LOG, ">>/home/ec2-user/log/nprgrab");
 	select LOG unless($ENV{TERM});
 	chomp($d = `date +\"\%b \%d \%T\"`);
 	print "[$d] (npr) $msg\n";
