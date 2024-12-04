@@ -20,7 +20,7 @@ $prog = $prg;
 #	$prog = "morning";
 #}
 #$npath = "/home/elyons/radio";
-$npath = "/home/ec2-user/Music/radio";
+$npath = "/home/etl4tech_gmail_com/Music/radio";
 $tpath = "/var/tmp";
 $plist = "/var/www/html/" . $prg . ".m3u";
 %tits = ('fa'=>'Fresh Aire', 'wesat'=>'Weakened Edition Saturday', 'wesun'=>'Weakened Edition Sunday', 'me'=>'Morning Edition', 'atc'=>'All Things Considered', 'ww'=>'Wait Wait Dont Tell Me', 'we'=>'Weakened Edition');
@@ -99,12 +99,12 @@ if($prg eq "we"){
 	}
 }
 chdir($tpath);
-#$get = "/usr/local/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg;
-#$get = "/usr/local/bin/wget -q -T 30 -O " . $prg . "\.m3u http://localhost/" . $prg;
-#$get = "/usr/local/bin/wget -q -T 30 -i /var/www/html/" . $prg;
+#$get = "/usr/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg;
+#$get = "/usr/bin/wget -q -T 30 -O " . $prg . "\.m3u http://localhost/" . $prg;
+#$get = "/usr/bin/wget -q -T 30 -i /var/www/html/" . $prg;
 #if($ARGV[1]){
 #	chomp($plist = $ARGV[2]);
-#	$get = "/usr/local/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg . "-" . $d . "\.m3u"; 
+#	$get = "/usr/bin/wget -q -T 30 -O " . $prg . "\.m3u http://lumpy/" . $prg . "-" . $d . "\.m3u"; 
 #	$get .= "-" . $d; 
 #	if($ENV{TERM}){
 #		print "$get\n";
@@ -152,8 +152,8 @@ foreach $url (`cat $got`){
 			if($ENV{TERM}){
 				print "Grabbing " . $prg . $d . " track $t...\n";
 			}
-#			if(system("/usr/local/bin/wget -q $url")!=0){
-			if(system("/usr/local/bin/wget -qO $fname $url")!=0){
+#			if(system("/usr/bin/wget -q $url")!=0){
+			if(system("/usr/bin/wget -qO $fname $url")!=0){
 				&logg("wget failed for $url: $!");
 				next;
 			}
@@ -163,7 +163,7 @@ foreach $url (`cat $got`){
 					next;
 				}
 			}
-			$recode = "/usr/local/bin/lame -a -m m -b 24 --resample 16 --scale 2 --quiet --add-id3v2 --ta NPR";
+			$recode = "/usr/bin/lame -a -m m -b 24 --resample 16 --scale 2 --quiet --add-id3v2 --ta NPR";
 			$recode .= " --tl \"".$d." ".$tits{$prg}. "\"";
 			if($song =~ /.+/){
 				$recode .= " --tt \"".$song."\"";
@@ -245,7 +245,7 @@ sub logg( "$" ){
 	chomp($tim = `date +\"\%b \%d \%T\"`);
 #	$tim = localtime(time);
 	$out = "@_";
-	$lfile = "/home/ec2-user/log/nprgrab";
+	$lfile = "/home/etl4tech_gmail_com/log/nprgrab";
 	open(LOG, ">>$lfile") or die "Can't open logfile $lfile: $!\n";
 	select LOG unless($ENV{TERM});
 	print "[$tim] (nprgrab) $out\n";

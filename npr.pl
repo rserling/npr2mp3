@@ -31,7 +31,7 @@ if(@ARGV == 1){
 	}
 	$arch="http://www.npr.org/programs/$pgid/archive";
 ## need error checking on this wget...
-	#	print "Command: `wget -qO - $arch |grep 'showDate=$urldate' |head -1`\n";
+		print "Command: `wget -qO - $arch |grep 'showDate=$urldate' |head -1`\n";
 	chomp($preurl = `wget -qO - $arch |grep 'showDate=$urldate' |head -1`);
 	if($? != 0){
 		&domail("Error: request failed for $urldate archive page for $pgid.");
@@ -227,7 +227,7 @@ if(($wdate =~ /[1-5]/)&&($prog eq "atc")&&($tx < 12)&&(!$ENV{TERM})){
 #	}
 	exit();
 }
-if(($prog =~ /^we/)&&($tx < 14)){
+if(($prog =~ /^we/)&&($tx < 14)&&(!$ENV{TERM})){
 #	&domail("Found too few story links for $prog ($tx), discarding playlist");
 	&logg("Found too few story links for $prog ($tx), discarding playlist");
 	$playlist = $dir . "/" . $prog . ".m3u";
