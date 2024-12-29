@@ -66,7 +66,7 @@ def main():
         
         mark = f"/var/tmp/{prog}{month}{day}"
         if os.path.exists(mark):
-            log_message(f"Flag file {mark} exists, exiting")
+            log_message(f"WARN: Flag file {mark} exists, exiting")
             sys.exit(0)
             
     elif len(sys.argv) == 3:
@@ -87,20 +87,20 @@ def main():
         preurl = subprocess.check_output(cmd, shell=True).decode('utf-8').strip()
         
         if not preurl:
-            log_message("Error: URL for {urldate} not found in archive page for {pgid}.")
+            log_message("ERROR: URL for {urldate} not found in archive page for {pgid}.")
             sys.exit(1)
             
         # Extract URL from response
         url_match = re.search(r'href="([^"]+)"', preurl)
         if not url_match:
-            log_message("Error: Could not extract URL from archive page response")
+            log_message("ERROR: Could not extract URL from archive page response")
             sys.exit(1)
             
         url = url_match.group(1)
         
     except subprocess.CalledProcessError:
-        log_message(f"Error: request failed for {urldate} archive page for {pgid}.")
-        #do_mail(f"Error: request failed for {urldate} archive page for {pgid}.")
+        log_message(f"ERROR: request failed for {urldate} archive page for {pgid}.")
+        #do_mail(f"ERROR: request failed for {urldate} archive page for {pgid}.")
         sys.exit(2)
 
     # Handle playlist file operations
@@ -135,32 +135,15 @@ def main():
             sys.exit(2)
         for story in tblob:
           data = json.loads(story)
-          playlist.append(f"# " + data["title"])
-          #playlist.append(data["title"])
+          title = data["title"]
+          #if 'Morning News Brief' in title or f'{day}, {year}' in title:
+          if 'Morning News Brief' in title:
+              continue
+          playlist.append(f"# {title}")
           rawurl = data["audioUrl"]
           chunx = rawurl.split("?") 
           playlist.append(chunx[0])
 
-#        # Process and filter content
-#        for title in titles:
-#            if not title or 'Morning News Brief' in title or f'{day}, {year}' in title:
-#                continue
-#                
-#            # Clean up title
-#            title = re.sub(r'[\(\*\)\;\@\?\']', '', title)
-#            for word in ['To', 'The', 'Or', 'And', 'With', 'For']:
-#                title = title.replace(f' {word} ', f' {word.lower()} ')
-#            
-#            playlist.append(f"# {title}")
-#
-#        # Add MP3 URLs
-#        for mp3_url in mp3_urls:
-#            if 'news_brief' in mp3_url or tod not in mp3_url:
-#                continue
-#            if re.search(r'[0-9]+m[0-9]+\.mp3', mp3_url):
-#                continue
-#            playlist.append(mp3_url)
-#
     # Write playlist
     plen = len(playlist)
     if plen == 0:
@@ -178,14 +161,14 @@ def main():
         try:
             os.remove(f"{dir_path}/{prog}.m3u")
         except OSError as e:
-            log_message(f"Failed to remove playlist: {e}")
+            log_message(f"ERROR: Failed to remove playlist: {e}")
 
     if prog == 'atc' and wdate in '12345' and tx < 12 and not os.environ.get('TERM'):
-        log_message(f"Found too few story links for {prog} ({tx}), discarding playlist")
+        log_message(f"ERROR: Found too few story links for {prog} ({tx}), discarding playlist")
         try:
             os.remove(f"{dir_path}/{prog}.m3u")
         except OSError as e:
-            log_message(f"Failed to remove playlist: {e}")
+            log_message(f"ERROR: Failed to remove playlist: {e}")
 
 if __name__ == "__main__":
     main()
