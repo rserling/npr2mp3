@@ -135,7 +135,11 @@ def main():
             sys.exit(2)
         for story in tblob:
           data = json.loads(story)
-          title = data["title"]
+          tit = data["title"]
+          # skipping dupe entry?
+          if tit == title: 
+              continue
+          title = tit
           #if 'Morning News Brief' in title or f'{day}, {year}' in title:
           if 'Morning News Brief' in title:
               continue
