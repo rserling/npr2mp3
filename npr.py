@@ -21,7 +21,7 @@ PROGRAMS = {
     'fa': 'fresh-air',
     'ww': 'wait-wait-dont-tell-me'
 }
-LPATH = "/var/tmp/"
+LPATH = "/var/www/html/"
 
 def log_message(message):
     """Log messages with timestamp"""
@@ -46,7 +46,7 @@ def main():
         sys.exit(1)
 
     prog = sys.argv[1].strip()
-    dir_path = "/var/tmp"
+    dir_path = "/var/www/html"
     pgid = PROGRAMS.get(prog)
     
     if not pgid:
@@ -107,7 +107,7 @@ def main():
     if len(sys.argv) == 2:
         playlist_path = f"{dir_path}/{prog}.m3u"
         if os.path.exists(playlist_path):
-            shutil.copy2(playlist_path, "/var/www/html/")
+            #shutil.copy2(playlist_path, LPATH)
             with open(playlist_path, 'r') as f:
                 line_count = sum(1 for _ in f)
             shutil.copy2(playlist_path, f"{playlist_path}.last")
