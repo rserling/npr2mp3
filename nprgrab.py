@@ -51,18 +51,18 @@ def send_email(subject, body):
             s.send_message(msg)
         return True
     except Exception as e:
-        log_message(f"Email send failed: {str(e)}")
+        log_message(f"ERROR: Email send failed: {str(e)}")
         return False
 
 def main():
-    usage = f"Usage: {sys.argv[0]} <fa|we|me|atc|ww> [#]\n where # is number of days ago\n"
+    usage = f"Usage: {sys.argv[0]} <fa|we|wesat|wesun|me|atc|ww> [#]\n where # is number of days ago\n"
     
     if len(sys.argv) < 2:
         print(usage)
         sys.exit(2)
         
     prg = sys.argv[1]
-    if prg not in ['fa', 'we', 'me', 'atc', 'ww']:
+    if prg not in ['fa', 'we', 'wesat', 'wesun', 'me', 'atc', 'ww']:
         print(usage)
         print(f"({prg})")
         sys.exit(2)
@@ -85,7 +85,7 @@ def main():
     date_str = target_date.strftime("%m%d")
     weekday = target_date.strftime("%w")
     
-    # Handle weekend edition special case
+    # Handle weakened edition special case
     if prg == "we":
         if weekday == "6":
             prg = "wesat"
@@ -99,24 +99,24 @@ def main():
     playlist = f"/var/www/html/{prog}.m3u"
     
     # Check if already processed
-    if os.path.exists(mark_file) and 'TERM' not in os.environ:
-        log_message(f"job already completed for {prg}{date_str}")
+    if os.path.exists(mark_file):
+        log_message(f"WARN: job already completed for {prg}{date_str}")
         sys.exit(0)
         
     # Process playlist
     if not os.path.exists(playlist):
-        log_message(f"playlist file {playlist} is absent")
+        log_message(f"ERROR: playlist file {playlist} is absent")
         sys.exit(0)
         
     if os.path.getsize(playlist) == 0:
-        log_message(f"playlist file {playlist} has no size, deleting")
+        log_message(f"ERROR: playlist file {playlist} has no size, deleting")
         os.unlink(playlist)
         sys.exit(0)
         
-    # Check playlist staleness
+    # Check playlist staleness, frogot use case
     mtime = os.path.getmtime(playlist)
     if (time.time() - mtime) > 28800:  # 8 hours
-        log_message(f"playlist file {playlist} is stale, aborting")
+        log_message(f"WARN: playlist file {playlist} is stale, aborting")
         os.unlink(playlist)
         sys.exit(3)
         
@@ -126,7 +126,7 @@ def main():
     files_processed = []
     
     with open(playlist) as f:
-        song = "Unknown Title"
+        story = "Unknown Title"
         track_num = 0
         
         for line in f:
@@ -134,14 +134,14 @@ def main():
             
             # Handle title lines
             if line.startswith('# '):
-                new_song = line[2:]
-                if new_song == song:
+                new_story = line[2:]
+                if new_story == story:
                     continue
                     
-                song = new_song
-                song = song.replace("'", "")
-                for word in ['Or', 'Of', 'And', 'The']:
-                    song = song.replace(f" {word} ", f" {word.lower()} ")
+                story = new_story
+                story = story.replace("'", "")
+                for word in ['Or', 'Of', 'And', 'The', 'For', 'A', 'An']:
+                    story = story.replace(f" {word} ", f" {word.lower()} ")
                 continue
                 
             # Handle MP3 URLs
@@ -151,7 +151,7 @@ def main():
                 output_name = f"{prg}{date_str}t{track_str}.mp3"
                 
                 if os.path.exists(os.path.join(NPATH, output_name)):
-                    log_message(f"File {output_name} already exists, skipping.")
+                    log_message(f"WARN: File {output_name} already exists, skipping.")
                     continue
                     
                 if 'TERM' in os.environ:
@@ -172,8 +172,8 @@ def main():
                         '--tg', 'Speech'
                     ]
                     
-                    if song != "Unknown Title":
-                        lame_cmd.extend(['--tt', song])
+                    if story != "Unknown Title":
+                        lame_cmd.extend(['--tt', story])
                         
                     lame_cmd.extend([output_name, os.path.join(NPATH, output_name)])
                     
@@ -184,11 +184,11 @@ def main():
                     os.unlink(output_name)
                     
                 except subprocess.CalledProcessError as e:
-                    log_message(f"Error processing {output_name}: {str(e)}")
+                    log_message(f"ERROR: Error processing {output_name}: {str(e)}")
                     continue
                     
     if done < 1:
-        log_message("no files available after downloads")
+        log_message("ERROR: no files available after downloads")
         sys.exit(1)
     else:
         if not os.path.exists(mark_file):
@@ -196,11 +196,10 @@ def main():
                 f.write(str(done))
                 
         files_text = "file" if done == 1 else "files"
-        log_message(f"Re-encoded and tagged {done} {files_text}")
+        log_message(f"INFO: Re-encoded and tagged {done} {files_text} for {prog}")
         
-        report = f"Re-encoded and tagged {done} {files_text} for {prog}\n"
         os.chdir(NPATH)
-        log_message("seem to have reached the end")
+        log_message("INFO: seem to have reached the end")
 
 if __name__ == "__main__":
     main()
