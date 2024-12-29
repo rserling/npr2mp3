@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+import json
 import os
+import re
 import sys
 import shutil
 import subprocess
 from datetime import datetime
-import re
+#from bs4 import BeautifulSoup
 
 # Constants
 MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -44,7 +46,7 @@ def main():
         sys.exit(1)
 
     prog = sys.argv[1].strip()
-    dir_path = "/var/www/html"
+    dir_path = "/var/tmp"
     pgid = PROGRAMS.get(prog)
     
     if not pgid:
@@ -97,14 +99,15 @@ def main():
         url = url_match.group(1)
         
     except subprocess.CalledProcessError:
-        do_mail(f"Error: request failed for {urldate} archive page for {pgid}.")
+        log_message(f"Error: request failed for {urldate} archive page for {pgid}.")
+        #do_mail(f"Error: request failed for {urldate} archive page for {pgid}.")
         sys.exit(2)
 
     # Handle playlist file operations
     if len(sys.argv) == 2:
         playlist_path = f"{dir_path}/{prog}.m3u"
         if os.path.exists(playlist_path):
-            shutil.copy2(playlist_path, "/var/tmp/")
+            shutil.copy2(playlist_path, "/var/www/html/")
             with open(playlist_path, 'r') as f:
                 line_count = sum(1 for _ in f)
             shutil.copy2(playlist_path, f"{playlist_path}.last")
@@ -114,38 +117,54 @@ def main():
         m3u_file = open(f"{dir_path}/{prog}-{fdstr}.m3u", 'w')
 
     # Fetch and process program page
-    output_file = "/var/www/html/nprout"
+    output_file = "/var/tmp/nprout"
+    log_message(f"requesting url {url} and writing to {output_file}")
     subprocess.run(['wget', '-qO', output_file, url])
     
     playlist = []
+    tblob = []
     with open(output_file, 'r') as f:
         content = f.read()
         
         # Extract titles and URLs
-        titles = re.findall(r"' >([^<]+)</a></h3>", content)
-        mp3_urls = re.findall(r'listen" href="(https://ondemand[^"]+\.mp3)', content)
-        
-        # Process and filter content
-        for title in titles:
-            if not title or 'Morning News Brief' in title or f'{day}, {year}' in title:
-                continue
-                
-            # Clean up title
-            title = re.sub(r'[\(\*\)\;\@\?\']', '', title)
-            for word in ['To', 'The', 'Or', 'And', 'With', 'For']:
-                title = title.replace(f' {word} ', f' {word.lower()} ')
-            
-            playlist.append(f"# {title}")
+        #<div class=\"audio-module-controls-wrap\" data-audio='"
+        tblob = re.findall(r"\" data-audio='([^\']+)'", content)
+        size = len(tblob)
+        if size == 0:
+            log_message(f"ERROR: tblob has no size, exiting")
+            sys.exit(2)
+        for story in tblob:
+          data = json.loads(story)
+          playlist.append(f"# " + data["title"])
+          #playlist.append(data["title"])
+          playlist.append(data["audioUrl"])
 
-        # Add MP3 URLs
-        for mp3_url in mp3_urls:
-            if 'news_brief' in mp3_url or tod not in mp3_url:
-                continue
-            if re.search(r'[0-9]+m[0-9]+\.mp3', mp3_url):
-                continue
-            playlist.append(mp3_url)
-
+#        # Process and filter content
+#        for title in titles:
+#            if not title or 'Morning News Brief' in title or f'{day}, {year}' in title:
+#                continue
+#                
+#            # Clean up title
+#            title = re.sub(r'[\(\*\)\;\@\?\']', '', title)
+#            for word in ['To', 'The', 'Or', 'And', 'With', 'For']:
+#                title = title.replace(f' {word} ', f' {word.lower()} ')
+#            
+#            playlist.append(f"# {title}")
+#
+#        # Add MP3 URLs
+#        for mp3_url in mp3_urls:
+#            if 'news_brief' in mp3_url or tod not in mp3_url:
+#                continue
+#            if re.search(r'[0-9]+m[0-9]+\.mp3', mp3_url):
+#                continue
+#            playlist.append(mp3_url)
+#
     # Write playlist
+    plen = len(playlist)
+    if plen == 0:
+        log_message(f"ERROR: playlist has no size, exiting")
+        sys.exit(2)
+
     for item in playlist:
         m3u_file.write(f"{item}\n")
     m3u_file.close()
