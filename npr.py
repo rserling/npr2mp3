@@ -137,7 +137,9 @@ def main():
           data = json.loads(story)
           playlist.append(f"# " + data["title"])
           #playlist.append(data["title"])
-          playlist.append(data["audioUrl"])
+          rawurl = data["audioUrl"]
+          chunx = rawurl.split("?") 
+          playlist.append(chunx[0])
 
 #        # Process and filter content
 #        for title in titles:
