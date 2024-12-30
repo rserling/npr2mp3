@@ -10,13 +10,13 @@ import shutil
 
 # Constants
 TITLES = {
+    'atc': 'All Things Considered',
     'fa': 'Fresh Aire',
+    'me': 'Morning Edition',
+    'we': 'Weakened Edition',
     'wesat': 'Weakened Edition Saturday', 
     'wesun': 'Weakened Edition Sunday',
-    'me': 'Morning Edition',
-    'atc': 'All Things Considered',
-    'ww': 'Wait Wait Dont Tell Me',
-    'we': 'Weakened Edition'
+    'ww': 'Wait Wait Dont Tell Me'
 }
 
 BASE = os.getenv("HOME")
@@ -153,6 +153,7 @@ def main():
                 
                 if os.path.exists(os.path.join(NPATH, output_name)):
                     log_message(f"WARN: File {output_name} already exists, skipping.")
+                    done += 1
                     continue
                     
                 if 'TERM' in os.environ:
