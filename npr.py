@@ -137,12 +137,12 @@ def main():
         for story in tblob:
           data = json.loads(story)
           tit = data["title"]
-          # skipping dupe entry?
+          # skipping dupe entry? Possibly no longer needed after JSON switch.
           if tit == title: 
               continue
           title = tit
           #if 'Morning News Brief' in title or f'{day}, {year}' in title:
-          if 'Morning News Brief' in title:
+          if 'Morning news brief' in title:
               continue
           playlist.append(f"# {title}")
           rawurl = data["audioUrl"]
