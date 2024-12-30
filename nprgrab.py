@@ -20,18 +20,19 @@ TITLES = {
 }
 
 BASE = os.getenv("HOME")
-NPATH = BASE + "/Music/radio"
+LPATH = os.path.join(BASE, "Music")
+NPATH = os.path.join(LPATH, "radio")
 TPATH = "/var/tmp"
 
 def log_message(message):
     """Log messages with timestamp"""
     timestamp = datetime.now().strftime("%b %d %H:%M:%S")
-    log_file = BASE + "/log/nprgrab"
-    
+    log_file = os.path.join(LPATH, "nprgrab.log")
+
     log_entry = f"[{timestamp}] (nprgrab) {message}\n"
     if 'TERM' in os.environ:
         print(log_entry, end='')
-    
+
     with open(log_file, 'a') as f:
         f.write(log_entry)
 

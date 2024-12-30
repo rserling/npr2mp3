@@ -15,20 +15,20 @@ MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 
 PROGRAMS = {
     'atc': 'all-things-considered',
+    'fa': 'fresh-air',
     'me': 'morning-edition',
     'wesat': 'weekend-edition-saturday',
     'wesun': 'weekend-edition-sunday',
-    'fa': 'fresh-air',
     'ww': 'wait-wait-dont-tell-me'
 }
-LPATH = "/var/www/html/"
+BASE = os.getenv("HOME")
+LPATH = os.path.join(BASE, "Music")
 
 def log_message(message):
     """Log messages with timestamp"""
     timestamp = datetime.now().strftime("%b %d %H:%M:%S")
-    log_file = os.path.join(LPATH, "nprgrab")
-    
-    log_entry = f"[{timestamp}] (nprgrab) {message}\n"
+    log_file = os.path.join(LPATH, "nprgrab.log")
+    log_entry = f"[{timestamp}] (npr) {message}\n"
     if 'TERM' in os.environ:
         print(log_entry, end='')
     
