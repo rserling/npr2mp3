@@ -56,7 +56,7 @@ def send_email(subject, body):
         return False
 
 def main():
-    usage = f"Usage: {sys.argv[0]} <fa|we|wesat|wesun|me|atc|ww> [#]\n where # is number of days ago\n"
+    usage = f"Usage: {sys.argv[0]} <atc|fa|me|we|wesat|wesun|ww> [#]\n where # is number of days ago\n"
     
     if len(sys.argv) < 2:
         print(usage)
