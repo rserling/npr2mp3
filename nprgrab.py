@@ -19,7 +19,7 @@ TITLES = {
     'we': 'Weakened Edition'
 }
 
-BASE = "/Users/elyons"
+BASE = os.getenv("HOME")
 NPATH = BASE + "/Music/radio"
 TPATH = "/var/tmp"
 

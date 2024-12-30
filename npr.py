@@ -130,6 +130,7 @@ def main():
         #<div class=\"audio-module-controls-wrap\" data-audio='"
         tblob = re.findall(r"\" data-audio='([^\']+)'", content)
         size = len(tblob)
+        title = ""
         if size == 0:
             log_message(f"ERROR: tblob has no size, exiting")
             sys.exit(2)
