@@ -10,28 +10,29 @@ import shutil
 
 # Constants
 TITLES = {
+    'atc': 'All Things Considered',
     'fa': 'Fresh Aire',
+    'me': 'Morning Edition',
+    'we': 'Weakened Edition',
     'wesat': 'Weakened Edition Saturday', 
     'wesun': 'Weakened Edition Sunday',
-    'me': 'Morning Edition',
-    'atc': 'All Things Considered',
-    'ww': 'Wait Wait Dont Tell Me',
-    'we': 'Weakened Edition'
+    'ww': 'Wait Wait Dont Tell Me'
 }
 
 BASE = os.getenv("HOME")
-NPATH = BASE + "/Music/radio"
+LPATH = os.path.join(BASE, "Music")
+NPATH = os.path.join(LPATH, "radio")
 TPATH = "/var/tmp"
 
 def log_message(message):
     """Log messages with timestamp"""
     timestamp = datetime.now().strftime("%b %d %H:%M:%S")
-    log_file = BASE + "/log/nprgrab"
-    
+    log_file = os.path.join(LPATH, "nprgrab.log")
+
     log_entry = f"[{timestamp}] (nprgrab) {message}\n"
     if 'TERM' in os.environ:
         print(log_entry, end='')
-    
+
     with open(log_file, 'a') as f:
         f.write(log_entry)
 
@@ -55,7 +56,7 @@ def send_email(subject, body):
         return False
 
 def main():
-    usage = f"Usage: {sys.argv[0]} <fa|we|wesat|wesun|me|atc|ww> [#]\n where # is number of days ago\n"
+    usage = f"Usage: {sys.argv[0]} <atc|fa|me|we|wesat|wesun|ww> [#]\n where # is number of days ago\n"
     
     if len(sys.argv) < 2:
         print(usage)
@@ -152,6 +153,7 @@ def main():
                 
                 if os.path.exists(os.path.join(NPATH, output_name)):
                     log_message(f"WARN: File {output_name} already exists, skipping.")
+                    done += 1
                     continue
                     
                 if 'TERM' in os.environ:
