@@ -184,6 +184,7 @@ def main():
           title = tit
           #if 'Morning News Brief' in title or f'{day}, {year}' in title:
           if 'Morning news brief' in title:
+              log_message("INFO: Skipping Morning News Brief")
               continue
           playlist.append(f"# {title}")
           rawurl = data["audioUrl"]
