@@ -6,8 +6,8 @@ import re
 import sys
 import shutil
 import subprocess
-from datetime import datetime
-#from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
+from pathlib import Path
 
 # Constants
 MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -39,9 +39,50 @@ def do_mail(message):
     """Send email notification"""
     print(message)  # Replace with proper email sending if needed
 
+def cull(prog):
+    mainpath = os.path.join(LPATH, "radio")
+    for directory_path in ["/var/tmp", mainpath]:
+      # Calculate the timestamp for 3 days ago
+      three_days_ago = datetime.now() - timedelta(days=3)
+      matching_files = []
+      
+      try:
+          # Use Path object for better path handling
+          directory = Path(directory_path)
+          
+          # Check if directory exists
+          if not directory.exists():
+              raise FileNotFoundError(f"Directory {directory_path} does not exist")
+              
+          # Iterate through files in directory
+          for file_path in directory.glob('*'):
+              if file_path.is_file():  # Ensure it's a file, not a directory
+                  # Check if pattern matches and file is old enough
+                  if pattern in file_path.name:
+                      file_timestamp = datetime.fromtimestamp(file_path.stat().st_mtime)
+                      if file_timestamp < three_days_ago:
+                          matching_files.append(str(file_path))
+                          
+          herd = matching_files.length
+          log_message(f"removing {herd} files at {directory_path} for {prog}")
+          for victim in matching_files:
+              os.remove(victim)
+          
+      except Exception as e:
+          print(f"Error occurred: {str(e)}")
+          return []
+
+# Example usage:
+# files = find_old_files("test")
+# for file in files:
+#     print(file)
+
+
+
 def main():
     if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <profile> [<MMDDYYYY>]")
+        print(f"Usage: {sys.argv[0]} <program> [<MMDDYYYY>]")
+        print(" where program can be atc, fa, me, wesat, wesun, we, ww.")
         print(" Date defaults to current day.")
         sys.exit(1)
 
@@ -174,6 +215,6 @@ def main():
             os.remove(f"{dir_path}/{prog}.m3u")
         except OSError as e:
             log_message(f"ERROR: Failed to remove playlist: {e}")
-
+    cull(prog)
 if __name__ == "__main__":
     main()
