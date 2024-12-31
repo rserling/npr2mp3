@@ -63,6 +63,8 @@ def cull(prog):
                       if file_timestamp < three_days_ago:
                           matching_files.append(str(file_path))
                           
+          herd = matching_files.length
+          log_message(f"removing {herd} files at {directory_path} for {prog}")
           for victim in matching_files:
               os.remove(victim)
           
