@@ -62,12 +62,12 @@ def cull(prog):
                       file_timestamp = datetime.fromtimestamp(file_path.stat().st_mtime)
                       if file_timestamp < three_days_ago:
                           matching_files.append(str(file_path))
-                          
+
           herd = matching_files.length
-          log_message(f"removing {herd} files at {directory_path} for {prog}")
+          log_message(f"INFO: removing {herd} files at {directory_path} for {prog}")
           for victim in matching_files:
               os.remove(victim)
-          
+
       except Exception as e:
           print(f"Error occurred: {str(e)}")
           return []
@@ -184,6 +184,7 @@ def main():
           title = tit
           #if 'Morning News Brief' in title or f'{day}, {year}' in title:
           if 'Morning news brief' in title:
+              log_message("INFO: Skipping Morning News Brief")
               continue
           playlist.append(f"# {title}")
           rawurl = data["audioUrl"]

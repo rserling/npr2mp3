@@ -200,8 +200,9 @@ def main():
         files_text = "file" if done == 1 else "files"
         log_message(f"INFO: Re-encoded and tagged {done} {files_text} for {prog}")
         
-        os.chdir(NPATH)
-        log_message("INFO: seem to have reached the end")
+        # os.chdir(NPATH) # why?
+        if 'TERM' in os.environ:
+            log_message("INFO: seem to have reached the end")
 
 if __name__ == "__main__":
     main()
