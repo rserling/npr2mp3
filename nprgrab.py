@@ -202,7 +202,7 @@ def main():
         
         # os.chdir(NPATH) # why?
         if 'TERM' in os.environ:
-            log_message("INFO: seem to have reached the end")
+            print("INFO: seem to have reached the end")
 
 if __name__ == "__main__":
     main()
