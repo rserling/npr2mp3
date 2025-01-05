@@ -58,18 +58,19 @@ def cull(prog):
           for file_path in directory.glob('*'):
               if file_path.is_file():  # Ensure it's a file, not a directory
                   # Check if pattern matches and file is old enough
-                  if pattern in file_path.name:
+                  if prog in file_path.name:
                       file_timestamp = datetime.fromtimestamp(file_path.stat().st_mtime)
                       if file_timestamp < three_days_ago:
                           matching_files.append(str(file_path))
 
-          herd = matching_files.length
+          #herd = matching_files.length
+          herd = len(matching_files)
           log_message(f"INFO: removing {herd} files at {directory_path} for {prog}")
           for victim in matching_files:
               os.remove(victim)
 
       except Exception as e:
-          print(f"Error occurred: {str(e)}")
+          log_message(f"Error occurred: {str(e)}")
           return []
 
 # Example usage:
@@ -87,7 +88,7 @@ def main():
         sys.exit(1)
 
     prog = sys.argv[1].strip()
-    dir_path = "/var/www/html"
+    dir_path = LPATH 
     pgid = PROGRAMS.get(prog)
     
     if not pgid:
@@ -128,13 +129,13 @@ def main():
         preurl = subprocess.check_output(cmd, shell=True).decode('utf-8').strip()
         
         if not preurl:
-            log_message("ERROR: URL for {urldate} not found in archive page for {pgid}.")
+            log_message(f"ERROR: URL for {urldate} not found in archive page for {pgid}.")
             sys.exit(1)
             
         # Extract URL from response
         url_match = re.search(r'href="([^"]+)"', preurl)
         if not url_match:
-            log_message("ERROR: Could not extract URL from archive page response")
+            log_message(f"ERROR: Could not extract URL from archive page response")
             sys.exit(1)
             
         url = url_match.group(1)
