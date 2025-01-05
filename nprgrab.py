@@ -97,7 +97,7 @@ def main():
             sys.exit(2)
             
     mark_file = os.path.join(TPATH, f"{prg}{date_str}")
-    playlist = f"/var/www/html/{prog}.m3u"
+    playlist = os.path.join(LPATH, f"{prog}.m3u")
     
     # Check if already processed
     if os.path.exists(mark_file):
