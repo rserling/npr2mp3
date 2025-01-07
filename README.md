@@ -45,12 +45,7 @@ These were learned as good times to expect all story files to be available. Some
 
 ## To Do
 
-* Clean up the **we[sat|sun]** issue, this was dropped in the python rewrite 
-* Rewrite backdating, probably doesn't work well now or at all
-* Merge 2 scripts into one. I think it originated with a need for 2 butt no longer has that.
-* _Build in cleanup of marker files (and others?) (pending test/QA)_
-* _Build in cleanup of older audio files, for self-containment (pending test/QA)_
-* Package the whole thing for AWS Lambda or GCP Cloud Functions
+To Do items have moved to [Issues](issues)
 
 ## Help
 
