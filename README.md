@@ -45,7 +45,7 @@ These were learned as good times to expect all story files to be available. Some
 
 ## To Do
 
-To Do items have moved to [Issues](issues)
+To Do items have moved to [Issues](https://github.com/rserling/npr2mp3/issues)
 
 ## Help
 
