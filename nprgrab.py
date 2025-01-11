@@ -13,7 +13,6 @@ TITLES = {
     'atc': 'All Things Considered',
     'fa': 'Fresh Aire',
     'me': 'Morning Edition',
-    'we': 'Weakened Edition',
     'wesat': 'Weakened Edition Saturday', 
     'wesun': 'Weakened Edition Sunday',
     'ww': 'Wait Wait Dont Tell Me'
@@ -56,14 +55,14 @@ def send_email(subject, body):
         return False
 
 def main():
-    usage = f"Usage: {sys.argv[0]} <atc|fa|me|we|wesat|wesun|ww> [#]\n where # is number of days ago\n"
+    usage = f"Usage: {sys.argv[0]} <atc|fa|me|wesat|wesun|ww> [#]\n where # is number of days ago\n"
     
     if len(sys.argv) < 2:
         print(usage)
         sys.exit(2)
         
     prg = sys.argv[1]
-    if prg not in ['fa', 'we', 'wesat', 'wesun', 'me', 'atc', 'ww']:
+    if prg not in ['fa', 'wesat', 'wesun', 'me', 'atc', 'ww']:
         print(usage)
         print(f"({prg})")
         sys.exit(2)
@@ -86,16 +85,6 @@ def main():
     date_str = target_date.strftime("%m%d")
     weekday = target_date.strftime("%w")
     
-    # Handle weakened edition special case
-    if prg == "we":
-        if weekday == "6":
-            prg = "wesat"
-        elif weekday == "0":
-            prg = "wesun"
-        else:
-            print(f"Error, not a weekend: d = {date_str}, w = {weekday}")
-            sys.exit(2)
-            
     mark_file = os.path.join(TPATH, f"{prg}{date_str}")
     playlist = os.path.join(LPATH, f"{prog}.m3u")
     

@@ -83,7 +83,7 @@ def cull(prog):
 def main():
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <program> [<MMDDYYYY>]")
-        print(" where program can be atc, fa, me, wesat, wesun, we, ww.")
+        print(" where program can be atc, fa, me, wesat, wesun, ww.")
         print(" Date defaults to current day.")
         sys.exit(1)
 
