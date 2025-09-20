@@ -8,8 +8,8 @@ MAILTO=bitshag@gmail.com
 49 16 * *  1-5 $HOME/bin/nprgrab.py fa 2>&1
 52 16 * * * $HOME/bin/npr.py atc 2>&1
 56 16 * *  * $HOME/bin/nprgrab.py atc 2>&1
-22 8 * * 6 $HOME/bin/npr.py wesat 2>&1
-26 8 * *  6 $HOME/bin/nprgrab.py wesat 2>&1
+52 7 * * 6 $HOME/bin/npr.py wesat 2>&1
+56 7 * *  6 $HOME/bin/nprgrab.py wesat 2>&1
 53 23 * * 6 $HOME/bin/npr.py ww 2>&1
 56 23 * * 6 $HOME/bin/nprgrab.py ww 2>&1
 
