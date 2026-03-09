@@ -185,6 +185,9 @@ def main():
               continue
           title = tit
           #if 'Morning News Brief' in title or f'{day}, {year}' in title:
+          if 'NEWSBRIEF' in title:
+              log_message("INFO: Skipping Morning News Brief")
+              continue
           if 'Morning news brief' in title:
               log_message("INFO: Skipping Morning News Brief")
               continue
