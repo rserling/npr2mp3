@@ -37,7 +37,7 @@ def log_message(message):
 
 def do_mail(message):
     """Send email notification"""
-    print(message)  # Replace with proper email sending if needed
+    print(message)  # Replace with proper email sending if found to be feasable at some point
 
 def cull(prog):
     mainpath = os.path.join(LPATH, "radio")
@@ -170,7 +170,8 @@ def main():
         
         # Extract titles and URLs
         #<div class=\"audio-module-controls-wrap\" data-audio='"
-        tblob = re.findall(r"\" data-audio='([^\']+)'", content)
+        #tblob = re.findall(r"\" data-audio='([^\']+)'", content)
+        tblob = re.findall(r"\" audioUrl='([^\']+)'", content)
         size = len(tblob)
         title = ""
         if size == 0:
@@ -184,7 +185,13 @@ def main():
               continue
           title = tit
           #if 'Morning News Brief' in title or f'{day}, {year}' in title:
+          if 'NEWSBRIEF' in title:
+              log_message("INFO: Skipping Morning News Brief")
+              continue
           if 'Morning news brief' in title:
+              log_message("INFO: Skipping Morning News Brief")
+              continue
+          if 'Morning new brief' in title:
               log_message("INFO: Skipping Morning News Brief")
               continue
           playlist.append(f"# {title}")

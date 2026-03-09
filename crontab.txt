@@ -1,0 +1,17 @@
+# Do NOT read this comment
+# m h  dom mon dow   command
+SHELL=/bin/bash
+MAILTO=bitshag@gmail.com
+52 7 * * 1-5 $HOME/bin/npr.py me 2>&1
+56 7 * * 1-5 $HOME/bin/nprgrab.py me 2>&1
+46 16 * * 1-5 $HOME/bin/npr.py fa 2>&1
+49 16 * *  1-5 $HOME/bin/nprgrab.py fa 2>&1
+52 16 * * * $HOME/bin/npr.py atc 2>&1
+56 16 * *  * $HOME/bin/nprgrab.py atc 2>&1
+52 7 * * 6 $HOME/bin/npr.py wesat 2>&1
+56 7 * *  6 $HOME/bin/nprgrab.py wesat 2>&1
+53 23 * * 6 $HOME/bin/npr.py ww 2>&1
+56 23 * * 6 $HOME/bin/nprgrab.py ww 2>&1
+
+#admin
+10 10 * * * /usr/bin/find $HOME/Music/radio -mtime +3 -type f -delete 2>&1
