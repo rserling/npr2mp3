@@ -170,28 +170,38 @@ def main():
         
         # Extract titles and URLs
         #<div class=\"audio-module-controls-wrap\" data-audio='"
-        #tblob = re.findall(r"\" data-audio='([^\']+)'", content)
-        tblob = re.findall(r"\" audioUrl='([^\']+)'", content)
+        tblob = re.findall(r"\" data-audio='([^\']+)'", content)
         size = len(tblob)
+        log_message(f"DEBUG: Found {size} audioUrl matches")
         title = ""
         if size == 0:
             log_message(f"ERROR: tblob has no size, exiting")
             sys.exit(2)
         for story in tblob:
-          data = json.loads(story)
+          try:
+            data = json.loads(story)
+            log_message(f"DEBUG: Parsed JSON: {data.keys()}")
+          except json.JSONDecodeError as e:
+            log_message(f"ERROR: JSON decode failed: {e}")
+            continue
+          except Exception as e:
+            log_message(f"ERROR: Unexpected error: {e}")
+            continue
+            
+          if "title" not in data or "audioUrl" not in data:
+            log_message(f"ERROR: Missing required keys in JSON")
+            continue
+            
           tit = data["title"]
+          log_message(f"DEBUG: Processing title: {tit}")
           # skipping dupe entry? Possibly no longer needed after JSON switch.
           if tit == title: 
-              continue
+            continue
           title = tit
           #if 'Morning News Brief' in title or f'{day}, {year}' in title:
-          if 'NEWSBRIEF' in title:
-              log_message("INFO: Skipping Morning News Brief")
-              continue
-          if 'Morning news brief' in title:
-              log_message("INFO: Skipping Morning News Brief")
-              continue
-          if 'Morning new brief' in title:
+          if prog == 'me':
+            title_lower = title.lower()
+            if 'news brief' in title_lower or 'newsbrief' in title_lower:
               log_message("INFO: Skipping Morning News Brief")
               continue
           playlist.append(f"# {title}")
