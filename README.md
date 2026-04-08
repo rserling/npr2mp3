@@ -30,17 +30,11 @@ It currently runs well from cron. Not sure if daemon/sysctl is warranted.
 These were learned as good times to expect all story files to be available. Sometimes you're going to miss 1 or 2, if it's a big/hot news day.
 ```
 52 6 * * 1-5 $HOME/bin/npr.py me 2>&1
-56 6 * * 1-5 $HOME/bin/nprgrab.py me 2>&1
 35 16 * * 1-5 $HOME/bin/npr.py fa 2>&1
-39 16 * *  1-5 $HOME/bin/nprgrab.py fa 2>&1
 52 16 * * * $HOME/bin/npr.py atc 2>&1
-56 16 * *  * $HOME/bin/nprgrab.py atc 2>&1
 22 8 * * 6 $HOME/bin/npr.py wesat 2>&1
-26 8 * *  6 $HOME/bin/nprgrab.py wesat 2>&1
 0 23 * * 6 $HOME/bin/npr.py ww 2>&1
-2 23 * * 6 $HOME/bin/nprgrab.py ww 2>&1
 35 23 2 7 * $HOME/bin/npr.py fa 2>&1
-39 23 2 7 * $HOME/bin/nprgrab.py fa 2>&1
 ```
 
 ## To Do
